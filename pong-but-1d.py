@@ -6,7 +6,7 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
 game_state = "menu"
-keys = pygame.key.get_pressed()
+
 
 player_pos = pygame.Vector2(100, screen.get_height() / 2)
 enemy_pos = pygame.Vector2(screen.get_width() - 100 , screen.get_height() / 2)
@@ -282,6 +282,8 @@ while running :
         #---------------------------
         if player_alive:
             draw_player()
+    
+        keys = pygame.key.get_pressed()
     
         if player_alive :
             if keys[pygame.K_a]:
