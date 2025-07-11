@@ -150,10 +150,6 @@ def draw_pause_menu():
     font = pygame.font.Font(None, 74)
     pause_text = font.render("PAUSED", True, "white")
     screen.blit(pause_text, (screen.get_width()//2 - pause_text.get_width()//2, 300))
-    
-    font = pygame.font.Font(None, 36)
-    resume_text = font.render("Press P to resume", True, "gray")
-    screen.blit(resume_text, (screen.get_width()//2 - resume_text.get_width()//2, 400))
 #------------------------------------
 
 # start
@@ -161,11 +157,6 @@ while running :
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_p and game_state == "playing":
-                game_state = "paused"
-            elif event.key == pygame.K_p and game_state == "paused":
-                game_state = "playing"
         
     screen.fill("black")
     
@@ -174,13 +165,14 @@ while running :
    
     if game_state == "menu":
         draw_menu()
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_space]:
             game_state = "playing"
    
-    elif game_state == "playing":
-        # game here
-        #-------------------------------------------------------
-        
+   
+   if game_state == "playing" :
+    # game here
+    #-------------------------------------------------------
+    
         #ball logic
         #---------------------------
     
@@ -231,7 +223,7 @@ while running :
         if enemy_alive and (enemy_left - ball_radius <= ball_pos.x <= enemy_right + ball_radius):
             if ball_vX < 0 and last_ball > enemy_right:
                 if current_time - enemy_last_damaged >= inv_time:
-                    enemy_damage = calculate_damage(ball_vX, enemy_vX)
+                    enemy_damage = calculate_damage(ball_vX, player_vX)
                     enemy_hp = max(0, enemy_hp - enemy_damage)
                     enemy_last_damaged = current_time
                 
@@ -239,7 +231,7 @@ while running :
                 ball_pos.x = enemy_right + ball_radius
             elif ball_vX > 0 and last_ball < enemy_left:
                 if current_time - enemy_last_damaged >= inv_time:
-                    enemy_damage = calculate_damage(ball_vX, enemy_vX)
+                    enemy_damage = calculate_damage(ball_vX, player_vX)
                     enemy_hp = max(0, enemy_hp - enemy_damage)
                     enemy_last_damaged = current_time
                 
@@ -318,10 +310,7 @@ while running :
     
         if enemy_alive :
             enemy_ball_distance = abs(ball_pos.x - enemy_pos.x)
-            if ball_vX != 0:
-                enemy_ball_time = enemy_ball_distance / abs(ball_vX)
-            else:
-                enemy_ball_time = float('inf')
+            enemy_ball_time = enemy_ball_distance / ball_vX
     
             if enemy_ball_time < reaction_time :
                 if enemy_ball_time <= 0 :
@@ -357,29 +346,16 @@ while running :
     
         #---------------------------
     
-    elif game_state == "paused":
-        # Draw the game state first
-        pygame.draw.circle(screen, "white", ball_pos, ball_radius)
-        if player_alive:
-            draw_player()
-        if enemy_alive:
-            draw_enemy()
-        
-        # Draw UI
-        draw_hp_bar(screen, 50, 10, player_hp, max_hp, "blue")
-        draw_hp_bar(screen, 1030, 10, enemy_hp, max_hp, "red")
-        draw_respawn_timer()
-        draw_score(player_score, enemy_score)
-        
-        # Draw pause overlay
-        draw_pause_menu()
+    if game_state == "playing" or "paused":
+    # ui display
+    #---------------------------
     
-    # UI display for playing state
-    if game_state == "playing":
         draw_hp_bar(screen, 50, 10, player_hp, max_hp, "blue")
         draw_hp_bar(screen, 1030, 10, enemy_hp, max_hp, "red")
         draw_respawn_timer()
         draw_score(player_score, enemy_score)
+
+        #---------------------------
 
     # -----------------------------------------------------
     pygame.display.flip()
