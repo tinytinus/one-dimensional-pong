@@ -27,8 +27,9 @@ paddle_width = 20
 max_hp = 100
 player_hp = max_hp
 player_damage = 0
-inv_time = 0.05
+inv_time = 0.2
 last_damaged = 0
+current_time = 0
 
 
 # enemy
@@ -37,6 +38,7 @@ enemy_damage = 0
 detection_radius = 100
 reaction_time = 0.3
 enemy_vX = 0
+enemy_last_damaged = 0
 
 
 # hp system
@@ -65,7 +67,20 @@ def draw_hp_bar(surface, x, y, current_hp, max_hp, color, width = 200, height = 
         
     if hp_width > 0:
         pygame.draw.rect(surface, bar_color, (x, y, hp_width, height))
+        
+def draw_player_inv():
+    current_time = pygame.time.get_ticks() / 1000
+    is_inv = current_time - last_damaged_time < inv_duration
+    
+    if is_inv:
+        if int(current_time * 10) % 2:
+            color = "lightblue"
+        else:
+            color = "blue"
+    else:
+        color = "blue"
 
+    pygame.draw.line(screen, color, (player_pos.x, player_pos.y + 40), (player_pos.x, player_pos.y - 40), paddle_width)
     
 #------------------------------------
 
@@ -98,24 +113,26 @@ while running :
              
     # player colision check
     
+    current_time = pygame.time.get_ticks() / 1000
+    
     player_left = player_pos.x - paddle_width / 2
     player_right = player_pos.x + paddle_width / 2
     
     
     if (player_left - ball_radius <= ball_pos.x <= player_right + ball_radius):
         if ball_vX < 0 and last_ball > player_right:
-            if last_damaged - dt > inv_time
+            if current_time - last_damaged >= inv_time:
                 player_damage = calculate_damage(ball_vX, player_vX)
-                last_damaged = dt 
-            else:
-                player_damage = 0
-            player_hp = max(0, player_hp - player_damage)
-            
+                player_hp = max(0, player_hp - player_damage)
+                last_damaged = current_time
+                
             ball_vX = abs(ball_vX) + player_vX * 0.75
             ball_pos.x = player_right + ball_radius
         elif ball_vX > 0 and last_ball < player_left:
-            player_damage = calculate_damage(ball_vX, player_vX)
-            player_hp = max(0, player_hp - player_damage)
+            if current_time - last_damaged >= inv_time:
+                player_damage = calculate_damage(ball_vX, player_vX)
+                player_hp = max(0, player_hp - player_damage)
+                last_damaged = current_time
             
             ball_vX = -abs(ball_vX) + player_vX * 0.75
             ball_pos.x = player_left - ball_radius 
@@ -127,15 +144,19 @@ while running :
      
     if (enemy_left - ball_radius <= ball_pos.x <= enemy_right + ball_radius):
         if ball_vX < 0 and last_ball > enemy_right:
-            enemy_damage = calculate_damage(ball_vX, enemy_vX)
-            enemy_hp = max(0, enemy_hp - enemy_damage)
-            
+            if current_time - enemy_last_damaged >= inv_time:
+                enemy_damage = calculate_damage(ball_vX, player_vX)
+                enemy_hp = max(0, enemy_hp - enemy_damage)
+                enemy_last_damaged = current_time
+                
             ball_vX = abs(ball_vX) + enemy_vX * 0.75
             ball_pos.x = enemy_right + ball_radius
         elif ball_vX > 0 and last_ball < enemy_left:
-            enemy_damage = calculate_damage(ball_vX, enemy_vX)
-            enemy_hp = max(0, enemy_hp - enemy_damage)
-            
+            if current_time - enemy_last_damaged >= inv_time:
+                enemy_damage = calculate_damage(ball_vX, player_vX)
+                enemy_hp = max(0, enemy_hp - enemy_damage)
+                enemy_last_damaged = current_time
+                
             ball_vX = -abs(ball_vX) + enemy_vX * 0.75
             ball_pos.x = enemy_left - ball_radius 
 
